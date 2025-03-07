@@ -198,9 +198,6 @@ namespace Extensions.Unity.ImageLoader
             if (LogLevel.IsActive(DebugLevel.Log))
                 Debug.Log($"[ImageLoader] Future[id={Id}] Loaded from Source. Processing...\n{Url}");
 
-            if (UseDiskCache)
-                await SaveDiskAsync(WebRequest.downloadHandler.data);
-
             if (IsCancelled || Status == FutureStatus.FailedToLoad)
             {
                 RemoveLoading(); // LOADING REMOVED
@@ -209,6 +206,9 @@ namespace Extensions.Unity.ImageLoader
             if (LogLevel.IsActive(DebugLevel.Trace))
                 Debug.Log($"[ImageLoader] Future[id={Id}] Parsing UnityWebRequest response\n{Url}");
             var downloadedObj = ParseWebRequest(WebRequest);
+            
+            if (UseDiskCache)
+                await SaveDiskAsync(WebRequest.downloadHandler.data, downloadedObj);
 
             if (UseMemoryCache)
                 SaveToMemoryCache(downloadedObj, replace: true);

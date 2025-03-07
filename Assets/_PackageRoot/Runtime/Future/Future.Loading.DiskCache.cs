@@ -11,7 +11,7 @@ namespace Extensions.Unity.ImageLoader
         /// <param name="url">URL to the picture, web or local</param>
         /// <returns>Returns true if image is cached at Disk</returns>
         protected virtual bool DiskCacheContains() => DiskCacheContains(Url);
-        protected virtual Task SaveDiskAsync(byte[] data)
+        protected virtual Task SaveDiskAsync(byte[] data, T obj = default(T))
         {
             if (LogLevel.IsActive(DebugLevel.Log))
                 Debug.Log($"[ImageLoader] Save to Disk cache ({typeof(T).Name})\n{Url}");

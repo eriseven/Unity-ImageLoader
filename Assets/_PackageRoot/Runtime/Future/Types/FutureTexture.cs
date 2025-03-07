@@ -24,7 +24,7 @@ namespace Extensions.Unity.ImageLoader
                 Debug.Log($"[ImageLoader] Future[id={Id}] Load from Disk cache ({typeof(Texture2D).Name})\n{Url}");
             return base.LoadDiskAsync();
         }
-        protected override Task SaveDiskAsync(byte[] data)
+        protected override Task SaveDiskAsync(byte[] data, Texture2D texture = null)
         {
             if (LogLevel.IsActive(DebugLevel.Log))
                 Debug.Log($"[ImageLoader] Future[id={Id}] Save to Disk cache ({typeof(Texture2D).Name})\n{Url}");
