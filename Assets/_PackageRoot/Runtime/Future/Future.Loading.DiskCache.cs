@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Extensions.Unity.ImageLoader
@@ -19,5 +20,21 @@ namespace Extensions.Unity.ImageLoader
         }
         protected virtual Task<byte[]> LoadDiskAsync() => LoadDiskAsync(Url, LogLevel);
         protected abstract T ParseBytes(byte[] bytes);
+
+        protected virtual async Task<T> LoadFromDiskAsync()
+        {
+            var bytes = await LoadDiskAsync();
+            if (bytes is { Length: > 0 })
+            {
+                await UniTask.SwitchToMainThread();
+                if (IsCancelled || Status == FutureStatus.FailedToLoad)
+                {
+                    return default(T);
+                }
+                return ParseBytes(bytes);
+            }
+
+            return default(T);
+        }
     }
 }

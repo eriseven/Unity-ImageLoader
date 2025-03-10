@@ -9,7 +9,7 @@ namespace Extensions.Unity.ImageLoader
         internal static readonly TaskFactory diskTaskFactory = new TaskFactory(new LimitedConcurrencyLevelTaskScheduler(1));
 
         protected static string DiskCacheFolderPath => $"{ImageLoader.settings.diskSaveLocation}/_{typeof(T).Name}";
-        protected static string DiskCachePath(string url) => $"{DiskCacheFolderPath}/_{url.GetHashCode()}";
+        protected static string DiskCachePath(string url) => $"{DiskCacheFolderPath}/_{url.GetHashCode()}{Path.GetExtension(url)}";
 
         protected static void SaveDisk(string url, byte[] data)
         {

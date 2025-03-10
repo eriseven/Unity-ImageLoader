@@ -1,6 +1,7 @@
 ﻿using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Extensions.Unity.ImageLoader
 {
@@ -71,27 +72,17 @@ namespace Extensions.Unity.ImageLoader
                 ((IFutureInternal<T>)this).Loading(FutureLoadingFrom.DiskCache);
                 try
                 {
-                    var bytes = await LoadDiskAsync();
-                    if (bytes != null && bytes.Length > 0)
+                    var loadedObj = await LoadFromDiskAsync();
+                    if (loadedObj != null)
                     {
-                        await UniTask.SwitchToMainThread();
-                        if (IsCancelled || Status == FutureStatus.FailedToLoad)
-                        {
-                            RemoveLoading(); // LOADING REMOVED
-                            return;
-                        }
-                        var loadedObj = ParseBytes(bytes);
-                        if (loadedObj != null)
-                        {
-                            if (UseMemoryCache)
-                                SaveToMemoryCache(loadedObj, replace: true);
+                        if (UseMemoryCache)
+                            SaveToMemoryCache(loadedObj, replace: true);
 
-                            RemoveLoading(); // LOADING REMOVED
-                            if (IsCancelled || Status == FutureStatus.FailedToLoad)
-                                return;
-                            ((IFutureInternal<T>)this).Loaded(loadedObj, FutureLoadedFrom.DiskCache);
+                        RemoveLoading(); // LOADING REMOVED
+                        if (IsCancelled || Status == FutureStatus.FailedToLoad)
                             return;
-                        }
+                        ((IFutureInternal<T>)this).Loaded(loadedObj, FutureLoadedFrom.DiskCache);
+                        return;
                     }
                 }
                 catch (OperationCanceledException)
