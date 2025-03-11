@@ -1,3 +1,4 @@
+#if SUPPORT_KTX_TEXTURE
 using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
@@ -11,7 +12,6 @@ namespace Extensions.Unity.ImageLoader.Tests
     {
         public static readonly string[] KtxImageURLs =
         {
-            // "https://github.com/eriseven/Unity-ImageLoader/blob/develop/Test%20KtxImages/3d_mip.ktx2",
             "https://github.com/eriseven/Unity-ImageLoader/raw/refs/heads/develop/Test%20KtxImages/3d.ktx2",
         };
 
@@ -34,3 +34,4 @@ namespace Extensions.Unity.ImageLoader.Tests
         }
     }
 }
+#endif
