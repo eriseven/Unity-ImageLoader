@@ -27,9 +27,9 @@ namespace Extensions.Unity.ImageLoader
         {
         }
 
-        protected override AudioClip ParseWebRequest(UnityWebRequest webRequest)
+        protected override Task<AudioClip> ParseWebRequest(UnityWebRequest webRequest)
         {
-            return (webRequest.downloadHandler as DownloadHandlerAudioClip)?.audioClip;
+            return Task.FromResult((webRequest.downloadHandler as DownloadHandlerAudioClip)?.audioClip);
         }
 
         protected override UnityWebRequest CreateWebRequest(string url)

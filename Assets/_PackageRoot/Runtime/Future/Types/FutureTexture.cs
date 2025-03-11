@@ -63,8 +63,8 @@ namespace Extensions.Unity.ImageLoader
         // --- Web Request ---
         protected override UnityWebRequest CreateWebRequest(string url)
             => UnityWebRequestTexture.GetTexture(url);
-        protected override Texture2D ParseWebRequest(UnityWebRequest webRequest)
-            => DownloadHandlerTexture.GetContent(webRequest);
+        protected override Task<Texture2D> ParseWebRequest(UnityWebRequest webRequest)
+            => Task.FromResult(DownloadHandlerTexture.GetContent(webRequest));
         protected override Texture2D ParseBytes(byte[] bytes)
             => ParseBytesToTexture(bytes, textureFormat, mipChain);
 

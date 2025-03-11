@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.atteneder.ktx": "2.2.3",
     "com.cysharp.unitask": "2.5.10",
     "com.unity.ext.nunit": "2.0.5",
     "com.unity.ide.rider": "3.0.34",
@@ -26,7 +27,8 @@
       "url": "https://package.openupm.com",
       "scopes": [
         "com.cysharp.unitask",
-        "com.openupm"
+        "com.openupm",
+        "com.atteneder.ktx"
       ]
     },
     {

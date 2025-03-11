@@ -196,7 +196,7 @@ namespace Extensions.Unity.ImageLoader
             }
             if (LogLevel.IsActive(DebugLevel.Trace))
                 Debug.Log($"[ImageLoader] Future[id={Id}] Parsing UnityWebRequest response\n{Url}");
-            var downloadedObj = ParseWebRequest(WebRequest);
+            var downloadedObj = await ParseWebRequest(WebRequest);
             
             if (UseDiskCache)
                 await SaveDiskAsync(WebRequest.downloadHandler.data, downloadedObj);

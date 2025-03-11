@@ -1,5 +1,6 @@
 
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine.Networking;
 
 namespace Extensions.Unity.ImageLoader
@@ -16,7 +17,7 @@ namespace Extensions.Unity.ImageLoader
 
         protected override T ParseBytes(byte[] bytes) => default;
 
-        protected override T ParseWebRequest(UnityWebRequest webRequest) => default;
+        protected override Task<T> ParseWebRequest(UnityWebRequest webRequest) => default;
 
         protected override void ReleaseMemory(T obj, DebugLevel logLevel = DebugLevel.Log) { }
     }

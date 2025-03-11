@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -28,7 +29,7 @@ namespace Extensions.Unity.ImageLoader
             return WebRequest.SendWebRequest();
         }
 
-        protected abstract T ParseWebRequest(UnityWebRequest webRequest);
+        protected abstract Task<T> ParseWebRequest(UnityWebRequest webRequest);
         protected abstract UnityWebRequest CreateWebRequest(string url);
     }
 }

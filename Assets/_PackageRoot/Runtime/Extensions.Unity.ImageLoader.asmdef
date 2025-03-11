@@ -2,7 +2,8 @@
     "name": "Extensions.Unity.ImageLoader",
     "rootNamespace": "Extensions.Unity.ImageLoader",
     "references": [
-        "UniTask"
+        "UniTask",
+        "Ktx"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

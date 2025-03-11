@@ -1,5 +1,6 @@
 
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine.Networking;
 
 namespace Extensions.Unity.ImageLoader
@@ -13,7 +14,7 @@ namespace Extensions.Unity.ImageLoader
 
         protected override UnityWebRequest CreateWebRequest(string url) => throw new System.NotImplementedException();
         protected override Reference<T> ParseBytes(byte[] bytes) => throw new System.NotImplementedException();
-        protected override Reference<T> ParseWebRequest(UnityWebRequest webRequest) => throw new System.NotImplementedException();
+        protected override Task<Reference<T>> ParseWebRequest(UnityWebRequest webRequest) => throw new System.NotImplementedException();
 
         protected override void ReleaseMemory(Reference<T> obj, DebugLevel logLevel = DebugLevel.Log)
         {
