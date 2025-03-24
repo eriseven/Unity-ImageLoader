@@ -84,3 +84,7 @@ crashlytics-build.properties
 UserSettings/Layouts/default-2021.dwlt
 UserSettings/Layouts/default-2022.dwlt
 UserSettings/Layouts/default-6000.dwlt
+
+# My Optional Plugins
+/Assets/Plugins/UnityEditorDarkMode*
+/Assets/DevLocker*
