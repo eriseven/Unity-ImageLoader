@@ -64,11 +64,6 @@ namespace Extensions.Unity.ImageLoader
             });
         }
 
-        protected override Task SaveDiskAsync(byte[] data, AudioClip obj = null)
-        {
-            return base.SaveDiskAsync(data, obj);
-        }
-
         protected override async Task<AudioClip> LoadFromDiskAsync()
         {
             var url = "file:///" + (DiskCachePath(Url));
