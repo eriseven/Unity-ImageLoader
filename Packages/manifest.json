@@ -27,6 +27,13 @@
         "com.openupm",
         "com.atteneder.ktx"
       ]
+    },
+    {
+      "name": "Unity NuGet",
+      "url": "https://unitynuget-registry.openupm.com",
+      "scopes": [
+        "org.nuget"
+      ]
     }
   ]
 }
