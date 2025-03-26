@@ -1,5 +1,6 @@
 {
     "name": "Extensions.Unity.ImageLoader.Tests.Editor",
+    "rootNamespace": "",
     "references": [
         "Extensions.Unity.ImageLoader.Tests",
         "Extensions.Unity.ImageLoader",
@@ -14,9 +15,10 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "nunit.framework.dll"
+        "nunit.framework.dll",
+        "Newtonsoft.Json.dll"
     ],
-    "autoReferenced": false,
+    "autoReferenced": true,
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
     ],

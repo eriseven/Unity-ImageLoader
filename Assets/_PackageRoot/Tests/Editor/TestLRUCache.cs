@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using Extensions.Unity.ImageLoader.Tests.Utils;
+using Newtonsoft.Json;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -24,15 +25,19 @@ namespace Extensions.Unity.ImageLoader.Tests
                 }
             }
 
+            [JsonProperty]
             LinkedList<string> cache = new();
             private NodeHash keys = new();
 
             public uint MaxCapacity { get; set; } = 100;
-            
+
+            [JsonIgnore]
             public int Count => cache.Count;
-            
+
+            [JsonIgnore]
             public string First => cache.First.Value;
-            
+
+            [JsonIgnore]
             public string Last => cache.Last.Value;
 
             public void UpdateItem(string url)
@@ -79,6 +84,17 @@ namespace Extensions.Unity.ImageLoader.Tests
             {
             }
 
+            public void Init()
+            {
+                keys.Clear();
+                var node = cache.First;
+                while (node != null)
+                {
+                    keys.Add(node);
+                    node = node.Next;
+                }
+            }
+
             void CheckCapacity()
             {
                 if (cache.Count <= MaxCapacity)
@@ -113,6 +129,37 @@ namespace Extensions.Unity.ImageLoader.Tests
             }
         }
 
+        LRUCache LoadLRUCache()
+        {
+            LRUCache cache;
+            var path = Path.Combine(ImageLoader.settings.diskSaveLocation, "lru_cache.json");
+            if (File.Exists(path))
+            {
+                var json = File.ReadAllText(path);
+                cache = JsonConvert.DeserializeObject<LRUCache>(json,
+                    new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
+            }
+            else
+            {
+                cache = new LRUCache();
+            }
+
+            cache.Init();
+            return cache;
+        }
+
+        void SaveLRUCache(LRUCache cache)
+        {
+            var path = Path.Combine(ImageLoader.settings.diskSaveLocation, "lru_cache.json");
+            var json = JsonConvert.SerializeObject(cache, Formatting.Indented,
+                new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
+
+            if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Trace))
+                Debug.Log($"[LRUCache] saved. \n{json})");
+
+            File.WriteAllText(path, json);
+        }
+
         [UnitySetUp]
         public override IEnumerator SetUp()
         {
@@ -128,26 +175,47 @@ namespace Extensions.Unity.ImageLoader.Tests
 
             ImageLoader.settings.useDiskCache = true;
             ImageLoader.settings.useMemoryCache = false;
-            var cache = new LRUCache();
-            ImageLoader.settings.lruCache = cache;
             
+            var path = Path.Combine(ImageLoader.settings.diskSaveLocation, "lru_cache.json");
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+            
+            var cache = LoadLRUCache();
+            ImageLoader.settings.lruCache = cache;
+
             foreach (var imageURL in TestUtils.ImageURLs)
             {
                 yield return LoadSprite(imageURL).TimeoutCoroutine(TimeSpan.FromSeconds(10));
                 Assert.IsTrue(ImageLoader.DiskCacheContains(imageURL));
             }
 
+            SaveLRUCache(cache);
+            cache = LoadLRUCache();
+            ImageLoader.settings.lruCache = cache;
+
             var lastUrl = TestUtils.ImageURLs[0];
             yield return LoadSprite(lastUrl).TimeoutCoroutine(TimeSpan.FromSeconds(10));
-            
-            // Debug.Log($"{cache.First} : /_{lastUrl}{Path.GetExtension(lastUrl)}");
             Assert.IsTrue(cache.First.Contains($"/_{lastUrl.GetHashCode()}{Path.GetExtension(lastUrl)}"));
             
+            SaveLRUCache(cache);
+            cache = LoadLRUCache();
+            ImageLoader.settings.lruCache = cache;
+            Assert.IsTrue(cache.First.Contains($"/_{lastUrl.GetHashCode()}{Path.GetExtension(lastUrl)}"));
+
             cache.MaxCapacity = 2;
             yield return LoadSprite(lastUrl).TimeoutCoroutine(TimeSpan.FromSeconds(10));
             Assert.IsTrue(cache.First.Contains($"/_{lastUrl.GetHashCode()}{Path.GetExtension(lastUrl)}"));
             Assert.IsTrue(cache.Count == 2);
             
+            SaveLRUCache(cache);
+            cache = LoadLRUCache();
+            ImageLoader.settings.lruCache = cache;
+            
+            Assert.IsTrue(cache.First.Contains($"/_{lastUrl.GetHashCode()}{Path.GetExtension(lastUrl)}"));
+            Assert.IsTrue(cache.Count == 2);
+ 
         }
     }
 }
