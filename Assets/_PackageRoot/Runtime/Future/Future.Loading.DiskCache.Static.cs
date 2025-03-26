@@ -6,6 +6,8 @@ namespace Extensions.Unity.ImageLoader
 {
     public partial class Future<T>
     {
+        internal static ILRUCache lruCache => ImageLoader.settings.lruCache;
+        
         internal static readonly TaskFactory diskTaskFactory = new TaskFactory(new LimitedConcurrencyLevelTaskScheduler(1));
 
         protected static string DiskCacheFolderPath => $"{ImageLoader.settings.diskSaveLocation}/_{typeof(T).Name}";
@@ -15,13 +17,17 @@ namespace Extensions.Unity.ImageLoader
         {
             Directory.CreateDirectory(Path.GetDirectoryName(DiskCachePath(url)));
             File.WriteAllBytes(DiskCachePath(url), data);
+            lruCache?.UpdateItem(DiskCachePath(url));
         }
         protected static byte[] LoadDisk(string url)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(DiskCachePath(url)));
             if (!DiskCacheContains(url))
                 return null;
-            return File.ReadAllBytes(DiskCachePath(url));
+            
+            var bytes = File.ReadAllBytes(DiskCachePath(url));
+            lruCache?.UpdateItem(DiskCachePath(url));
+            return bytes;
         }
         protected static Task SaveDiskAsync(string url, byte[] data, DebugLevel logLevel)
         {
@@ -81,7 +87,10 @@ namespace Extensions.Unity.ImageLoader
             return diskTaskFactory.StartNew(() =>
             {
                 if (Directory.Exists(DiskCacheFolderPath))
+                {
                     Directory.Delete(DiskCacheFolderPath, true);
+                    lruCache?.CleanUp();
+                }
             });
         }
 
@@ -94,6 +103,7 @@ namespace Extensions.Unity.ImageLoader
             if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Log))
                 Debug.Log($"[ImageLoader] Clear Disk cache ({typeof(T).Name})\n{url}");
             var diskPath = DiskCachePath(url);
+            lruCache?.Remove(diskPath);
             return diskTaskFactory.StartNew(() =>
             {
                 if (!File.Exists(diskPath))
