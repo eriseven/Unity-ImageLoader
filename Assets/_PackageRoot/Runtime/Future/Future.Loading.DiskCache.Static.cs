@@ -6,7 +6,7 @@ namespace Extensions.Unity.ImageLoader
 {
     public partial class Future<T>
     {
-        internal static ILRUCache lruCache => ImageLoader.settings.lruCache;
+        internal static IDiskCache diskCache => ImageLoader.settings.diskCache;
         
         internal static readonly TaskFactory diskTaskFactory = new TaskFactory(new LimitedConcurrencyLevelTaskScheduler(1));
 
@@ -15,19 +15,11 @@ namespace Extensions.Unity.ImageLoader
 
         protected static void SaveDisk(string url, byte[] data)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(DiskCachePath(url)));
-            File.WriteAllBytes(DiskCachePath(url), data);
-            lruCache?.UpdateItem(DiskCachePath(url));
+            diskCache.Add(url, data);
         }
         protected static byte[] LoadDisk(string url)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(DiskCachePath(url)));
-            if (!DiskCacheContains(url))
-                return null;
-            
-            var bytes = File.ReadAllBytes(DiskCachePath(url));
-            lruCache?.UpdateItem(DiskCachePath(url));
-            return bytes;
+            return diskCache.GetData(url);
         }
         protected static Task SaveDiskAsync(string url, byte[] data, DebugLevel logLevel)
         {
@@ -47,7 +39,8 @@ namespace Extensions.Unity.ImageLoader
         /// </summary>
         /// <param name="url">URL to the picture, web or local</param>
         /// <returns>Returns true if image is cached at Disk</returns>
-        public static bool DiskCacheContains(string url) => File.Exists(DiskCachePath(url));
+        // public static bool DiskCacheContains(string url) => File.Exists(DiskCachePath(url));
+        public static bool DiskCacheContains(string url) => diskCache.Contains(url);
 
         /// <summary>
         /// Check if the image is cached at Disk
@@ -56,8 +49,9 @@ namespace Extensions.Unity.ImageLoader
         /// <returns>Returns true if image is cached at Disk</returns>
         public static Task<bool> DiskCacheExistsAsync(string url)
         {
-            var path = DiskCachePath(url);
-            return diskTaskFactory.StartNew(() => File.Exists(path));
+            // var path = DiskCachePath(url);
+            // return diskTaskFactory.StartNew(() => File.Exists(path));
+            return diskTaskFactory.StartNew(() => DiskCacheContains(url));
         }
 
         /// <summary>
@@ -84,14 +78,7 @@ namespace Extensions.Unity.ImageLoader
         {
             if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Log))
                 Debug.Log($"[ImageLoader] Clear Disk cache ({typeof(T).Name}) All");
-            return diskTaskFactory.StartNew(() =>
-            {
-                if (Directory.Exists(DiskCacheFolderPath))
-                {
-                    Directory.Delete(DiskCacheFolderPath, true);
-                    lruCache?.CleanUp();
-                }
-            });
+            return diskTaskFactory.StartNew(() => diskCache.Clear());
         }
 
         /// <summary>
@@ -102,14 +89,7 @@ namespace Extensions.Unity.ImageLoader
         {
             if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Log))
                 Debug.Log($"[ImageLoader] Clear Disk cache ({typeof(T).Name})\n{url}");
-            var diskPath = DiskCachePath(url);
-            lruCache?.Remove(diskPath);
-            return diskTaskFactory.StartNew(() =>
-            {
-                if (!File.Exists(diskPath))
-                    return;
-                File.Delete(diskPath);
-            });
+            return diskTaskFactory.StartNew(() => diskCache.Remove(url));
         }
     }
 }
