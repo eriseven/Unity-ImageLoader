@@ -27,6 +27,7 @@ namespace Extensions.Unity.ImageLoader
             lock (memoryCache)
                 return memoryCache.ContainsKey(url);
         }
+
         /// <summary>
         /// Save sprite to Memory cache directly. Should be used for overloading cache system
         /// </summary>
@@ -40,14 +41,17 @@ namespace Extensions.Unity.ImageLoader
                 if (!replace && memoryCache.ContainsKey(url))
                 {
                     if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Warning))
-                        Debug.LogError($"[ImageLoader] Can't set to Memory cache ({typeof(T).Name}), because it already contains the key. Use 'replace = true' to replace\n{url}");
+                        Debug.LogError(
+                            $"[ImageLoader] Can't set to Memory cache ({typeof(T).Name}), because it already contains the key. Use 'replace = true' to replace\n{url}");
                     return;
                 }
+
                 if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Trace) && !suppressMessage)
                     Debug.Log($"[ImageLoader] Save to Memory cache ({typeof(T).Name})\n{url}");
                 memoryCache[url] = obj;
             }
         }
+
         /// <summary>
         /// Loads directly from Memory cache if exists and allowed
         /// </summary>
@@ -65,6 +69,7 @@ namespace Extensions.Unity.ImageLoader
 
             return new Reference<T>(url, obj);
         }
+
         /// <summary>
         /// Loads directly from Memory cache if exists and allowed
         /// </summary>
@@ -75,18 +80,25 @@ namespace Extensions.Unity.ImageLoader
             lock (memoryCache)
                 return memoryCache.GetValueOrDefault(url);
         }
+
         /// <summary>
         /// Clear Memory cache for the given url
         /// </summary>
         /// <param name="url">URL to the picture, web or local</param>
-        public static void ClearMemoryCache(string url, Action<T, DebugLevel> releaseMemory, DebugLevel logLevel = DebugLevel.Log)
+        public static void ClearMemoryCache(string url, Action<T, DebugLevel> releaseMemory,
+            DebugLevel logLevel = DebugLevel.Log)
         {
             if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Log))
                 Debug.Log($"[ImageLoader] Clearing Memory cache ({typeof(T).Name})\n{url}");
 
             var refCount = Reference<T>.Counter(url);
             if (refCount > 0)
-                throw new Exception($"[ImageLoader] There are {refCount} references to the sprite, clear them first. URL={url}");
+            {
+                Debug.LogError($"[ImageLoader] There are {refCount} references to the sprite, clear them first. URL={url}");
+                return;
+                // throw new Exception($"[ImageLoader] There are {refCount} references to the sprite, clear them first. URL={url}");               
+            }
+
 
             lock (memoryCache)
             {
@@ -96,11 +108,13 @@ namespace Extensions.Unity.ImageLoader
                 }
             }
         }
+
         /// <summary>
         /// Clear Memory cache for all urls
         /// </summary>
         /// <param name="url">URL to the picture, web or local</param>
-        public static void ClearMemoryCacheAll(Action<T, DebugLevel> releaseMemory, DebugLevel logLevel = DebugLevel.Log)
+        public static void ClearMemoryCacheAll(Action<T, DebugLevel> releaseMemory,
+            DebugLevel logLevel = DebugLevel.Log)
         {
             if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Log))
                 Debug.Log($"[ImageLoader] Clearing Memory cache ({typeof(T).Name}) All");
@@ -115,7 +129,8 @@ namespace Extensions.Unity.ImageLoader
                     if (refCount > 0)
                     {
                         if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Error))
-                            Debug.LogError($"[ImageLoader] There are {refCount} references to the object, clear them first. URL={url}");
+                            Debug.LogError(
+                                $"[ImageLoader] There are {refCount} references to the object, clear them first. URL={url}");
                         toKeep.Add(keyValue);
                         continue;
                     }
@@ -123,6 +138,7 @@ namespace Extensions.Unity.ImageLoader
                     var cache = keyValue.Value;
                     Safe.Run(releaseMemory, cache, logLevel, logLevel);
                 }
+
                 memoryCache.Clear();
 
                 // Restoring not released references

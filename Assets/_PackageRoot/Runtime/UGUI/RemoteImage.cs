@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace Extensions.Unity.ImageLoader.UGUI
@@ -23,8 +22,9 @@ namespace Extensions.Unity.ImageLoader.UGUI
         }
 
 
-        IFuture<Reference<Sprite>> future;
-        Reference<Sprite>  spriteRef;
+        // IFuture<Reference<Sprite>> future;
+        IFuture<Reference<Texture2D>> future;
+        Reference<Texture2D>  textrueRef;
 
         private bool dirty = true;
 
@@ -41,19 +41,19 @@ namespace Extensions.Unity.ImageLoader.UGUI
                 if (!string.IsNullOrEmpty(url))
                 {
                     this.overrideSprite = null;
-                    spriteRef?.Dispose();
-                    spriteRef = null;
+                    textrueRef?.Dispose();
+                    textrueRef = null;
                     
                     future?.Dispose();
                     future = null;
                     dirty = false;
-                    future = ImageLoader.LoadSpriteRef(url)
+                    future = ImageLoader.LoadTextureRef(url)
                         .Loaded(reference =>
                         {
                             Debug.Log("RemoteImage.Reload() Loaded");
                             reference.DisposeOnDisable(this);
-                            this.overrideSprite = reference.Value;
-                            spriteRef = reference;
+                            this.overrideSprite = reference.Value.ToSprite();
+                            textrueRef = reference;
                         })
                         .Failed(reference =>
                         {
@@ -84,8 +84,8 @@ namespace Extensions.Unity.ImageLoader.UGUI
             base.OnDisable();
             future = null;
             
-            spriteRef?.Dispose();
-            spriteRef = null;
+            textrueRef?.Dispose();
+            textrueRef = null;
         }
 
         public bool Dirty

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Extensions.Unity.ImageLoader
 {
@@ -20,10 +21,23 @@ namespace Extensions.Unity.ImageLoader
         /// </summary>
         /// <returns>Returns null if not allowed to use Memory cache or if there is no cached Sprite</returns>
         protected virtual T LoadFromMemoryCache() => LoadFromMemoryCache(Url);
+
         /// <summary>
         /// Clear Memory cache for the given url
         /// </summary>
-        protected virtual void ClearMemoryCache() => ClearMemoryCache(Url, ReleaseMemory, LogLevel);
+        protected virtual void ClearMemoryCache()
+        {
+            try
+            {
+                ClearMemoryCache(Url, ReleaseMemory, LogLevel);
+            }
+            catch (Exception e)
+            {
+                if (LogLevel.IsActive(DebugLevel.Exception))
+                    Debug.LogException(e);
+            }
+        }
+
         /// <summary>
         /// Clear Memory cache for all urls
         /// </summary>
