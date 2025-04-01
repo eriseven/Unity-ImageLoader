@@ -88,8 +88,8 @@ namespace Extensions.Unity.ImageLoader
 
             // 'sprite.texture' could be called only from main thread
             // checking sprite.IsNull is enough until we are in main thread
-            if (sprite.IsNull())
-                return;
+            // if (sprite.IsNull())
+            //     return;
 
             UniTask.Post(() =>
             {
