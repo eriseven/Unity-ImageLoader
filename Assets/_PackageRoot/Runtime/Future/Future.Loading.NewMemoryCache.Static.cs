@@ -1,4 +1,4 @@
-﻿#if LEGACY_MEMORY_CACHE
+﻿#if !LEGACY_MEMORY_CACHE
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,7 +7,11 @@ namespace Extensions.Unity.ImageLoader
 {
     public abstract partial class Future<T>
     {
-        internal static volatile Dictionary<string, T> memoryCache = new Dictionary<string, T>();
+        // internal static volatile Dictionary<string, T> memoryCache = new Dictionary<string, T>();
+
+        internal static IMemoryCache memoryCache => ImageLoader.settings.memoryCache;
+
+        internal static DebugLevel DebugLevel => ImageLoader.settings.debugLevel;
 
         // internal static void ClearMemoryCache()
         // {
@@ -26,8 +30,9 @@ namespace Extensions.Unity.ImageLoader
         public static bool MemoryCacheContains(string url)
         {
             lock (memoryCache)
-                return memoryCache.ContainsKey(url);
+                return memoryCache.Contains(url, typeof(T), DebugLevel);
         }
+
         /// <summary>
         /// Save sprite to Memory cache directly. Should be used for overloading cache system
         /// </summary>
@@ -38,17 +43,21 @@ namespace Extensions.Unity.ImageLoader
         {
             lock (memoryCache)
             {
-                if (!replace && memoryCache.ContainsKey(url))
+                if (!replace && memoryCache.Contains(url, typeof(T)))
                 {
                     if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Warning))
-                        Debug.LogError($"[ImageLoader] Can't set to Memory cache ({typeof(T).Name}), because it already contains the key. Use 'replace = true' to replace\n{url}");
+                        Debug.LogError(
+                            $"[ImageLoader] Can't set to Memory cache ({typeof(T).Name}), because it already contains the key. Use 'replace = true' to replace\n{url}");
                     return;
                 }
+
                 if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Trace) && !suppressMessage)
                     Debug.Log($"[ImageLoader] Save to Memory cache ({typeof(T).Name})\n{url}");
-                memoryCache[url] = obj;
+                // memoryCache[url] = obj;
+                memoryCache.Add(url, obj as UnityEngine.Object, DebugLevel);
             }
         }
+
         /// <summary>
         /// Loads directly from Memory cache if exists and allowed
         /// </summary>
@@ -59,13 +68,14 @@ namespace Extensions.Unity.ImageLoader
             T obj;
 
             lock (memoryCache)
-                obj = memoryCache.GetValueOrDefault(url);
+                obj = memoryCache.Get(url, typeof(T), DebugLevel) as T;
 
             if (obj == null)
                 return null;
 
             return new Reference<T>(url, obj);
         }
+
         /// <summary>
         /// Loads directly from Memory cache if exists and allowed
         /// </summary>
@@ -74,64 +84,72 @@ namespace Extensions.Unity.ImageLoader
         public static T LoadFromMemoryCache(string url)
         {
             lock (memoryCache)
-                return memoryCache.GetValueOrDefault(url);
+                return memoryCache.Get(url, typeof(T), DebugLevel) as T;
         }
+
         /// <summary>
         /// Clear Memory cache for the given url
         /// </summary>
         /// <param name="url">URL to the picture, web or local</param>
-        public static void ClearMemoryCache(string url, Action<T, DebugLevel> releaseMemory, DebugLevel logLevel = DebugLevel.Log)
+        public static void ClearMemoryCache(string url, Action<T, DebugLevel> releaseMemory,
+            DebugLevel logLevel = DebugLevel.Log)
         {
             if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Log))
                 Debug.Log($"[ImageLoader] Clearing Memory cache ({typeof(T).Name})\n{url}");
 
             var refCount = Reference<T>.Counter(url);
             if (refCount > 0)
-                throw new Exception($"[ImageLoader] There are {refCount} references to the sprite, clear them first. URL={url}");
+                throw new Exception(
+                    $"[ImageLoader] There are {refCount} references to the sprite, clear them first. URL={url}");
 
             lock (memoryCache)
             {
-                if (memoryCache.Remove(url, out var cache))
-                {
-                    Safe.Run(releaseMemory, cache, logLevel, logLevel);
-                }
+                memoryCache.Remove(url, typeof(T), true, DebugLevel);
+                // if (memoryCache.Remove(url, out var cache))
+                // {
+                // Safe.Run(releaseMemory, cache, logLevel, logLevel);
+                // }
             }
         }
+
         /// <summary>
         /// Clear Memory cache for all urls
         /// </summary>
         /// <param name="url">URL to the picture, web or local</param>
-        public static void ClearMemoryCacheAll(Action<T, DebugLevel> releaseMemory, DebugLevel logLevel = DebugLevel.Log)
+        public static void ClearMemoryCacheAll(Action<T, DebugLevel> releaseMemory,
+            DebugLevel logLevel = DebugLevel.Log)
         {
             if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Log))
                 Debug.Log($"[ImageLoader] Clearing Memory cache ({typeof(T).Name}) All");
 
             lock (memoryCache)
             {
-                var toKeep = new List<KeyValuePair<string, T>>();
-                foreach (var keyValue in memoryCache)
-                {
-                    var url = keyValue.Key;
-                    var refCount = Reference<T>.Counter(url);
-                    if (refCount > 0)
-                    {
-                        if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Error))
-                            Debug.LogError($"[ImageLoader] There are {refCount} references to the object, clear them first. URL={url}");
-                        toKeep.Add(keyValue);
-                        continue;
-                    }
+                // var toKeep = new List<KeyValuePair<string, T>>();
+                // foreach (var keyValue in memoryCache)
+                // {
+                //     var url = keyValue.Key;
+                //     var refCount = Reference<T>.Counter(url);
+                //     if (refCount > 0)
+                //     {
+                //         if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Error))
+                //             Debug.LogError(
+                //                 $"[ImageLoader] There are {refCount} references to the object, clear them first. URL={url}");
+                //         toKeep.Add(keyValue);
+                //         continue;
+                //     }
+                //
+                //     var cache = keyValue.Value;
+                //     Safe.Run(releaseMemory, cache, logLevel, logLevel);
+                // }
 
-                    var cache = keyValue.Value;
-                    Safe.Run(releaseMemory, cache, logLevel, logLevel);
-                }
-                memoryCache.Clear();
+                memoryCache.Clear(typeof(T), true, DebugLevel);
 
                 // Restoring not released references
-                if (toKeep.Count > 0)
-                {
-                    foreach (var keyValue in toKeep)
-                        memoryCache[keyValue.Key] = keyValue.Value;
-                }
+                // if (toKeep.Count > 0)
+                // {
+                //     foreach (var keyValue in toKeep)
+                //         memoryCache[keyValue.Key] = keyValue.Value;
+                // }
             }
         }
     }

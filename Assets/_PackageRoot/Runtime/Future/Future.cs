@@ -10,7 +10,7 @@ namespace Extensions.Unity.ImageLoader
     {
         public static volatile uint idCounter = 0;
     }
-    public partial class Future<T> : IFuture<T>, IFuture, IFutureInternal<T>, IDisposable
+    public partial class Future<T> : IFuture<T>, IFuture, IFutureInternal<T>, IDisposable where T : UnityEngine.Object
     {
         public string Url { get; }
 

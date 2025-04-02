@@ -16,7 +16,8 @@ namespace Extensions.Unity.ImageLoader
             FutureTexture.ClearMemoryCacheAll(FutureTexture.ReleaseMemoryTexture, settings.debugLevel);
         }
 #endif
-
+        internal static IMemoryCache  memoryCache => settings.memoryCache;
+        
         /// <summary>
         /// Check the Memory cache contains sprite for the given url
         /// </summary>

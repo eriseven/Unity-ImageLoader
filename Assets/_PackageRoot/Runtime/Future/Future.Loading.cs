@@ -81,7 +81,7 @@ namespace Extensions.Unity.ImageLoader
                         RemoveLoading(); // LOADING REMOVED
                         if (IsCancelled || Status == FutureStatus.FailedToLoad)
                             return;
-                            ((IFutureInternal<T>)this).SetLoaded(loadedObj, FutureLoadedFrom.DiskCache);
+                        ((IFutureInternal<T>)this).SetLoaded(loadedObj, FutureLoadedFrom.DiskCache);
                         return;
                     }
                 }
