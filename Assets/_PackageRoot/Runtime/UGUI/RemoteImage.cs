@@ -1,7 +1,12 @@
 ﻿using System;
-using Cysharp.Threading.Tasks;
+using System.IO;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Extensions.Unity.ImageLoader.UGUI
 {
@@ -28,20 +33,20 @@ namespace Extensions.Unity.ImageLoader.UGUI
         IFuture<Reference<Texture2D>> future;
         Reference<Texture2D> textrueRef;
 
-        [SerializeField]
-        private Texture2D placeHoder;
+        [SerializeField] private Texture2D m_PlaceHolder;
 
-        private Sprite m_PlaceHoderSprite;
+        private Sprite m_PlaceHolderSprite;
 
-        private Sprite placeHoderSprite
+        private Sprite PlaceHolderSprite
         {
             get
             {
-                if (m_PlaceHoderSprite.IsNull() && placeHoder.IsNotNull())
+                if (m_PlaceHolderSprite.IsNull() && m_PlaceHolder.IsNotNull())
                 {
-                    m_PlaceHoderSprite = placeHoder.ToSprite();
+                    m_PlaceHolderSprite = m_PlaceHolder.ToSprite();
                 }
-                return m_PlaceHoderSprite;
+
+                return m_PlaceHolderSprite;
             }
         }
 
@@ -51,15 +56,17 @@ namespace Extensions.Unity.ImageLoader.UGUI
         {
             Debug.Log("RemoteImage.Reload() Loaded");
             textrueRef = reference;
+            overrideSprite = reference.Value.ToSprite();
         }
 
         void OnFailed(Exception exception)
         {
             Debug.Log("RemoteImage.Reload() failed");
-            if (overrideSprite == placeHoderSprite)
+            if (overrideSprite == PlaceHolderSprite)
             {
                 overrideSprite = null;
             }
+
             future?.Dispose();
             future = null;
         }
@@ -72,7 +79,7 @@ namespace Extensions.Unity.ImageLoader.UGUI
                 {
                     overrideSprite = textrueRef.Value.ToSprite();
                 }
-                
+
                 if (future != null && future.Url == m_url)
                 {
                     return;
@@ -81,17 +88,18 @@ namespace Extensions.Unity.ImageLoader.UGUI
                 Debug.Log("RemoteImage.Reload()");
                 if (!string.IsNullOrEmpty(url))
                 {
-                    overrideSprite = placeHoderSprite;
+                    overrideSprite = PlaceHolderSprite;
                     textrueRef?.Dispose();
                     textrueRef = null;
 
                     future?.Dispose();
                     future = null;
                     dirty = false;
+
                     future = ImageLoader.LoadTextureRef(url)
                         .Loaded(OnLoaded)
                         .Failed(OnFailed)
-                        .Consume(this)
+                        // .Consume(this)
                         .Canceled(() => { Debug.Log("RemoteImage.Reload() cancelled"); });
                 }
                 else
@@ -141,6 +149,36 @@ namespace Extensions.Unity.ImageLoader.UGUI
             Debug.Log("RemoteImage.OnValidate()");
             base.OnValidate();
             Reload();
+        }
+
+        [MenuItem("CONTEXT/Image/Convert to RemoteImage")]
+        public static void ReplaceImageWithRemoteImage(MenuCommand command)
+        {
+            if (command.context == null) return;
+
+            var monoBehaviour = command.context as MonoBehaviour;
+
+            var guids = AssetDatabase.FindAssets("RemoteImage t:MonoScript glob:\"Runtime/UGUI/**\"");
+            if (guids == null || guids.Length == 0)
+            {
+                return;
+            }
+            var chosenTextAsset = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(guids[0]), typeof(UnityEngine.Object));
+            
+            if (chosenTextAsset == null)
+            {
+                return;
+            }
+
+            Undo.RegisterCompleteObjectUndo(command.context, "Changing component script");
+
+            var so = new SerializedObject(monoBehaviour);
+            var scriptProperty = so.FindProperty("m_Script");
+            var spriteProperty = so.FindProperty("m_Sprite");
+            so.Update();
+            scriptProperty.objectReferenceValue = chosenTextAsset;
+            spriteProperty.objectReferenceValue = null;
+            so.ApplyModifiedProperties();
         }
 #endif
     }

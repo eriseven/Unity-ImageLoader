@@ -14,6 +14,9 @@ namespace Extensions.Unity.ImageLoader.UGUI
         SerializedProperty m_url;
 
         GUIContent m_URLGUIContent;
+        
+        SerializedProperty m_PlaceHolder;
+        GUIContent m_PlaceHolderContent;
 
         SerializedProperty m_Texture;
         SerializedProperty m_UVRect;
@@ -35,6 +38,9 @@ namespace Extensions.Unity.ImageLoader.UGUI
 
             m_URLGUIContent = EditorGUIUtility.TrTextContent("Source URL");
             m_url = serializedObject.FindProperty("m_url");
+            
+            m_PlaceHolder = serializedObject.FindProperty("m_PlaceHolder");
+            m_PlaceHolderContent = EditorGUIUtility.TrTextContent("Place Holder");
         }
 
         RemoteRawImage rawImageTarget => target as RemoteRawImage;
@@ -48,6 +54,7 @@ namespace Extensions.Unity.ImageLoader.UGUI
                 rawImageTarget.Dirty = true;
             }
 
+            EditorGUILayout.PropertyField(m_PlaceHolder, m_PlaceHolderContent);
             if (GUILayout.Button("Refresh"))
             {
                 rawImageTarget.Dirty = true;

@@ -1,6 +1,11 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Extensions.Unity.ImageLoader.UGUI
 {
@@ -44,7 +49,7 @@ namespace Extensions.Unity.ImageLoader.UGUI
         IFuture<Reference<Texture2D>> future;
         Reference<Texture2D> textrueRef;
 
-        [SerializeField] private Texture2D placeHoder;
+        [SerializeField] private Texture2D m_PlaceHolder;
 
 
         void OnLoaded(Reference<Texture2D> reference)
@@ -177,6 +182,38 @@ namespace Extensions.Unity.ImageLoader.UGUI
             base.OnValidate();
 
             Reload();
+        }
+
+        [MenuItem("CONTEXT/RawImage/Convert to RemoteRawImage")]
+        public static void ReplaceImageWithRemoteImage(MenuCommand command)
+        {
+            if (command.context == null) return;
+
+            var monoBehaviour = command.context as MonoBehaviour;
+
+            var guids = AssetDatabase.FindAssets("RemoteRawImage t:MonoScript glob:\"Runtime/UGUI/**\"");
+            if (guids == null || guids.Length == 0)
+            {
+                return;
+            }
+
+            var chosenTextAsset =
+                AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(guids[0]), typeof(UnityEngine.Object));
+
+            if (chosenTextAsset == null)
+            {
+                return;
+            }
+
+            Undo.RegisterCompleteObjectUndo(command.context, "Changing component script");
+
+            var so = new SerializedObject(monoBehaviour);
+            var scriptProperty = so.FindProperty("m_Script");
+            var textureProperty = so.FindProperty("m_Texture");
+            so.Update();
+            scriptProperty.objectReferenceValue = chosenTextAsset;
+            textureProperty.objectReferenceValue = null;
+            so.ApplyModifiedProperties();
         }
 #endif
     }

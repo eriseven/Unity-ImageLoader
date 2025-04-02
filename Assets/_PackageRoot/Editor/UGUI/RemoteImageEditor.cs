@@ -14,9 +14,13 @@ namespace Extensions.Unity.ImageLoader.UGUI
         static Type baseType = typeof(ImageEditor);
         
         SerializedProperty m_url;
-
+        
         GUIContent m_URLGUIContent;
-
+        
+        SerializedProperty m_PlaceHolder;
+        
+        GUIContent m_PlaceHolderContent;
+        
         SerializedProperty m_Type;
 
         SerializedProperty m_Sprite;
@@ -61,6 +65,8 @@ namespace Extensions.Unity.ImageLoader.UGUI
             
             m_URLGUIContent = EditorGUIUtility.TrTextContent("Source URL");
             m_url = serializedObject.FindProperty("m_url");
+            m_PlaceHolder = serializedObject.FindProperty("m_PlaceHolder");
+            m_PlaceHolderContent = EditorGUIUtility.TrTextContent("Place Holder");
         }
 
         void UrlGUI()
@@ -72,6 +78,7 @@ namespace Extensions.Unity.ImageLoader.UGUI
                 imageTarget.Dirty = true;
             }
             
+            EditorGUILayout.PropertyField(m_PlaceHolder, m_PlaceHolderContent);
             if (GUILayout.Button("Refresh"))
             {
                 imageTarget.Dirty = true;
