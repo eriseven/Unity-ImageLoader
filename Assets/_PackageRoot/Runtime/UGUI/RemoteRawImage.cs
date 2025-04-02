@@ -44,14 +44,14 @@ namespace Extensions.Unity.ImageLoader.UGUI
         IFuture<Reference<Texture2D>> future;
         Reference<Texture2D> textrueRef;
 
+        [SerializeField] private Texture2D placeHoder;
+
+
         void OnLoaded(Reference<Texture2D> reference)
         {
             Debug.Log("RemoteRawImage.Reload() Loaded");
-            reference.DisposeOnDisable(this);
-            remoteTexture = reference.Value;
+            // remoteTexture = reference.Value;
             textrueRef = reference;
-            SetVerticesDirty();
-            SetMaterialDirty();
         }
 
         void OnFailed(Exception exception)
@@ -82,10 +82,15 @@ namespace Extensions.Unity.ImageLoader.UGUI
                     future = ImageLoader.LoadTextureRef(url)
                         .Loaded(OnLoaded)
                         .Failed(OnFailed)
-                        .CancelOnDisable(this)
+                        .Consume(this)
+                        // .SetPlaceholder(placeHoder, Color.white, PlaceholderTrigger.LoadingFromSource);
                         .Canceled(() => { Debug.Log("RemoteRawImage.Reload() cancelled"); });
 
                     future.Forget();
+                }
+                else
+                {
+                    remoteTexture = null;
                 }
             }
         }
@@ -97,19 +102,41 @@ namespace Extensions.Unity.ImageLoader.UGUI
             Reload();
         }
 
-        protected override void OnDisable()
+        protected override void OnDestroy()
         {
-            Debug.Log("RemoteRawImage.OnDisable()");
-
-            remoteTexture = null;
+            Debug.Log("RemoteRawImage.OnDestroy()");
             base.OnDisable();
-            future = null;
-
+            future?.Dispose();
             textrueRef?.Dispose();
-            textrueRef = null;
         }
 
-        Texture2D remoteTexture;
+        // protected override void OnDisable()
+        // {
+        //     Debug.Log("RemoteRawImage.OnDisable()");
+        //
+        //     remoteTexture = null;
+        //     base.OnDisable();
+        //     future = null;
+        //
+        //     textrueRef?.Dispose();
+        //     textrueRef = null;
+        // }
+
+        private Texture2D m_RemoteTexture;
+
+        public Texture2D remoteTexture
+        {
+            get => m_RemoteTexture;
+            set
+            {
+                if (m_RemoteTexture != value)
+                {
+                    m_RemoteTexture = value;
+                    SetVerticesDirty();
+                    SetMaterialDirty();
+                }
+            }
+        }
 
         public new Texture texture
         {
@@ -125,6 +152,12 @@ namespace Extensions.Unity.ImageLoader.UGUI
             {
                 if (remoteTexture == null)
                 {
+                    if (textrueRef is { IsDisposed: false })
+                    {
+                        m_RemoteTexture = textrueRef.Value;
+                        return remoteTexture;
+                    }
+
                     if (material != null && material.mainTexture != null)
                     {
                         return material.mainTexture;
@@ -138,8 +171,6 @@ namespace Extensions.Unity.ImageLoader.UGUI
         }
 
 #if UNITY_EDITOR
-
-
         protected override void OnValidate()
         {
             Debug.Log("RemoteRawImage.OnValidate()");

@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Extensions.Unity.ImageLoader.UGUI
@@ -24,47 +26,77 @@ namespace Extensions.Unity.ImageLoader.UGUI
 
         // IFuture<Reference<Sprite>> future;
         IFuture<Reference<Texture2D>> future;
-        Reference<Texture2D>  textrueRef;
+        Reference<Texture2D> textrueRef;
+
+        [SerializeField]
+        private Texture2D placeHoder;
+
+        private Sprite m_PlaceHoderSprite;
+
+        private Sprite placeHoderSprite
+        {
+            get
+            {
+                if (m_PlaceHoderSprite.IsNull() && placeHoder.IsNotNull())
+                {
+                    m_PlaceHoderSprite = placeHoder.ToSprite();
+                }
+                return m_PlaceHoderSprite;
+            }
+        }
 
         private bool dirty = true;
+
+        void OnLoaded(Reference<Texture2D> reference)
+        {
+            Debug.Log("RemoteImage.Reload() Loaded");
+            textrueRef = reference;
+        }
+
+        void OnFailed(Exception exception)
+        {
+            Debug.Log("RemoteImage.Reload() failed");
+            if (overrideSprite == placeHoderSprite)
+            {
+                overrideSprite = null;
+            }
+            future?.Dispose();
+            future = null;
+        }
 
         void Reload()
         {
             if (dirty || overrideSprite == null)
             {
+                if (overrideSprite == null && textrueRef is { IsDisposed: false })
+                {
+                    overrideSprite = textrueRef.Value.ToSprite();
+                }
+                
                 if (future != null && future.Url == m_url)
                 {
                     return;
                 }
-                
+
                 Debug.Log("RemoteImage.Reload()");
                 if (!string.IsNullOrEmpty(url))
                 {
-                    this.overrideSprite = null;
+                    overrideSprite = placeHoderSprite;
                     textrueRef?.Dispose();
                     textrueRef = null;
-                    
+
                     future?.Dispose();
                     future = null;
                     dirty = false;
                     future = ImageLoader.LoadTextureRef(url)
-                        .Loaded(reference =>
-                        {
-                            Debug.Log("RemoteImage.Reload() Loaded");
-                            reference.DisposeOnDisable(this);
-                            this.overrideSprite = reference.Value.ToSprite();
-                            textrueRef = reference;
-                        })
-                        .Failed(reference =>
-                        {
-                            Debug.Log("RemoteImage.Reload() failed");
-                            future?.Dispose();
-                            future = null;
-                        })
-                        .CancelOnDisable(this)
-                        .Canceled(() => {Debug.Log("RemoteImage.Reload() cancelled");});
-                        // .Consume(this);
-                    future.Forget();
+                        .Loaded(OnLoaded)
+                        .Failed(OnFailed)
+                        .Consume(this)
+                        .Canceled(() => { Debug.Log("RemoteImage.Reload() cancelled"); });
+                }
+                else
+                {
+                    overrideSprite = null;
                 }
             }
         }
@@ -76,16 +108,12 @@ namespace Extensions.Unity.ImageLoader.UGUI
             Reload();
         }
 
-        protected override void OnDisable()
+        protected override void OnDestroy()
         {
-            Debug.Log("RemoteImage.OnDisable()");
-            
-            this.overrideSprite = null;
-            base.OnDisable();
-            future = null;
-            
+            Debug.Log("RemoteImage.OnDestroy()");
+            base.OnDestroy();
+            future?.Dispose();
             textrueRef?.Dispose();
-            textrueRef = null;
         }
 
         public bool Dirty
@@ -101,11 +129,10 @@ namespace Extensions.Unity.ImageLoader.UGUI
                         future.Dispose();
                         future = null;
                     }
-
                 }
             }
         }
-        
+
 #if UNITY_EDITOR
 
 
@@ -113,10 +140,8 @@ namespace Extensions.Unity.ImageLoader.UGUI
         {
             Debug.Log("RemoteImage.OnValidate()");
             base.OnValidate();
-
             Reload();
         }
 #endif
-        
     }
 }
