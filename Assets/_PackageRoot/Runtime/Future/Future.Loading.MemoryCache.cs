@@ -23,7 +23,18 @@ namespace Extensions.Unity.ImageLoader
         /// <summary>
         /// Clear Memory cache for the given url
         /// </summary>
-        protected virtual void ClearMemoryCache() => ClearMemoryCache(Url, ReleaseMemory, LogLevel);
+        protected virtual void ClearMemoryCache()
+        {
+#if LEGACY_MEMORY_CACHE
+            ClearMemoryCache(Url, ReleaseMemory, LogLevel);
+#else
+            lock (memoryCache)
+            {
+                memoryCache.RemoveAllType(Url, true, LogLevel);
+            }
+#endif
+        }
+
         /// <summary>
         /// Clear Memory cache for all urls
         /// </summary>

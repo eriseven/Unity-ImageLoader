@@ -53,7 +53,6 @@ namespace Extensions.Unity.ImageLoader
 
                 if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Trace) && !suppressMessage)
                     Debug.Log($"[ImageLoader] Save to Memory cache ({typeof(T).Name})\n{url}");
-                // memoryCache[url] = obj;
                 memoryCache.Add(url, obj as UnityEngine.Object, DebugLevel);
             }
         }
@@ -105,10 +104,6 @@ namespace Extensions.Unity.ImageLoader
             lock (memoryCache)
             {
                 memoryCache.Remove(url, typeof(T), true, DebugLevel);
-                // if (memoryCache.Remove(url, out var cache))
-                // {
-                // Safe.Run(releaseMemory, cache, logLevel, logLevel);
-                // }
             }
         }
 
@@ -124,32 +119,7 @@ namespace Extensions.Unity.ImageLoader
 
             lock (memoryCache)
             {
-                // var toKeep = new List<KeyValuePair<string, T>>();
-                // foreach (var keyValue in memoryCache)
-                // {
-                //     var url = keyValue.Key;
-                //     var refCount = Reference<T>.Counter(url);
-                //     if (refCount > 0)
-                //     {
-                //         if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Error))
-                //             Debug.LogError(
-                //                 $"[ImageLoader] There are {refCount} references to the object, clear them first. URL={url}");
-                //         toKeep.Add(keyValue);
-                //         continue;
-                //     }
-                //
-                //     var cache = keyValue.Value;
-                //     Safe.Run(releaseMemory, cache, logLevel, logLevel);
-                // }
-
                 memoryCache.Clear(typeof(T), true, DebugLevel);
-
-                // Restoring not released references
-                // if (toKeep.Count > 0)
-                // {
-                //     foreach (var keyValue in toKeep)
-                //         memoryCache[keyValue.Key] = keyValue.Value;
-                // }
             }
         }
     }
