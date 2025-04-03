@@ -50,8 +50,8 @@ namespace Extensions.Unity.ImageLoader
                 return;
             }
 
-            if (obj.IsNull())
-                return;
+            // if (obj.IsNull())
+            //     return;
 
             UniTask.Post(() =>
             {

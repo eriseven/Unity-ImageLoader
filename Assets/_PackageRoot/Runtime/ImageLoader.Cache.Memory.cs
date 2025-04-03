@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 #pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
@@ -74,8 +75,27 @@ namespace Extensions.Unity.ImageLoader
         /// <param name="url">URL to the picture, web or local</param>
         public static void ClearMemoryCache(string url)
         {
-            FutureSprite.ClearMemoryCache(url, FutureSprite.ReleaseMemorySprite, settings.debugLevel);
-            FutureTexture.ClearMemoryCache(url, FutureTexture.ReleaseMemoryTexture, settings.debugLevel);
+            try
+            {
+                FutureSprite.ClearMemoryCache(url, FutureSprite.ReleaseMemorySprite, settings.debugLevel);
+            }
+            catch (Exception e)
+            {
+                
+                if (settings.debugLevel.IsActive(DebugLevel.Exception))
+                    Debug.LogException(e);
+            }
+
+            try
+            {
+                FutureTexture.ClearMemoryCache(url, FutureTexture.ReleaseMemoryTexture, settings.debugLevel);
+            }
+            catch (Exception e)
+            {
+                if (settings.debugLevel.IsActive(DebugLevel.Exception))
+                    Debug.LogException(e);
+            }
+            
         }
 
         /// <summary>

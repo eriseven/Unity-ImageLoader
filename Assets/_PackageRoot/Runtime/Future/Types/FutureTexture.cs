@@ -46,8 +46,8 @@ namespace Extensions.Unity.ImageLoader
                 UnityEngine.Object.DestroyImmediate(obj);
                 return;
             }
-            if (obj.IsNull())
-                return;
+            // if (obj.IsNull())
+            //     return;
 
             UniTask.Post(() =>
             {
