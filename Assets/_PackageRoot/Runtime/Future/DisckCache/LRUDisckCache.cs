@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using UnityEngine;
 
 namespace Extensions.Unity.ImageLoader
 {
@@ -33,30 +35,86 @@ namespace Extensions.Unity.ImageLoader
                 return _sb.ToString();
             }
         }
-        
+
+        string KeyToPath(string key)
+        {
+            return Path.Combine(DiskCacheFolderPath, KeyHash(key));
+        }
+
+        LinkedList<KeyValuePair<string, string>> cache = new();
+        Dictionary<string, LinkedListNode<KeyValuePair<string, string>>> nodeCache = new();
+
         public bool Contains(string key)
         {
-            throw new System.NotImplementedException();
+            return nodeCache.ContainsKey(key);
         }
 
         public string Add(string key, byte[] date)
         {
-            throw new System.NotImplementedException();
+            Debug.Assert(!nodeCache.ContainsKey(key));
+            var path = KeyToPath(key);
+
+            if (!Directory.Exists(Path.GetDirectoryName(path)))
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+            File.WriteAllBytes(path, date);
+
+            cache.AddFirst(new KeyValuePair<string, string>(key, path));
+            nodeCache.Add(key, cache.First);
+
+            return path;
         }
 
         public void Remove(string key)
         {
-            throw new System.NotImplementedException();
+            var path = "";
+            if (nodeCache.ContainsKey(key))
+            {
+                var node = nodeCache[key];
+                path = node.Value.Value;
+
+                cache.Remove(node);
+                nodeCache.Remove(key);
+            }
+            else
+            {
+                path = KeyToPath(key);
+            }
+
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
         }
 
         public byte[] GetData(string key)
         {
-            throw new System.NotImplementedException();
+            if (nodeCache.ContainsKey(key))
+            {
+                var node = nodeCache[key];
+                var path = node.Value.Value;
+                if (File.Exists(path))
+                {
+                    var bytes = File.ReadAllBytes(path);
+                    cache.Remove(node);
+                    cache.AddFirst(node);
+                }
+                else
+                {
+                    nodeCache.Remove(key);
+                    cache.Remove(node);
+                }
+            }
+
+            return null;
         }
 
         public void Clear()
         {
-            throw new System.NotImplementedException();
+            if (Directory.Exists(DiskCacheFolderPath))
+            {
+                Directory.Delete(DiskCacheFolderPath, true);
+            }
         }
     }
 }
