@@ -111,7 +111,12 @@ namespace Extensions.Unity.ImageLoader
                     if (LogLevel.IsActive(DebugLevel.Trace))
                         Debug.Log($"[ImageLoader] Future[id={Id}] Creating UnityWebRequest for loading from Source\n{Url}");
 
-                    var asyncOperation = SetWebRequest(CreateWebRequest(Url))
+                    string requestUrl = Url;
+                    if (ImageLoader.settings.useBaseUrl && !string.IsNullOrEmpty(ImageLoader.settings.baseUrl))
+                    {
+                        requestUrl = $"{ImageLoader.settings.baseUrl.TrimEnd('/')}/{requestUrl.TrimStart('/')}";
+                    }
+                    var asyncOperation = SetWebRequest(CreateWebRequest(requestUrl))
                         .SendWebRequest();
 
                     await UniTask.WaitUntil(() => asyncOperation.isDone || IsCancelled);

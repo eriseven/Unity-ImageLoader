@@ -53,7 +53,17 @@ namespace Extensions.Unity.ImageLoader.UGUI
             {
                 rawImageTarget.Dirty = true;
             }
+            
+            var requestUrl = m_url.stringValue;
+            if (ImageLoader.settings.useBaseUrl && !string.IsNullOrEmpty(ImageLoader.settings.baseUrl))
+            {
+                requestUrl = $"{ImageLoader.settings.baseUrl.TrimEnd('/')}/{requestUrl.TrimStart('/')}";
+            }
 
+            EditorGUI.BeginDisabledGroup(true);
+            EditorGUILayout.TextField(requestUrl);
+            EditorGUI.EndDisabledGroup();
+            
             EditorGUILayout.PropertyField(m_PlaceHolder, m_PlaceHolderContent);
             if (GUILayout.Button("Refresh"))
             {

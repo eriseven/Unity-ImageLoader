@@ -40,6 +40,9 @@ namespace Extensions.Unity.ImageLoader
         /// Default value is 30 seconds
         /// </summary>
         public TimeSpan timeout = TimeSpan.FromSeconds(30);
+        
+        public bool useBaseUrl = false;
+        public string baseUrl = "";
     }
 
     public enum DebugLevel
