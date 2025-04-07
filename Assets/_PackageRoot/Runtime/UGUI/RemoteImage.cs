@@ -29,7 +29,6 @@ namespace Extensions.Unity.ImageLoader.UGUI
         }
 
 
-        // IFuture<Reference<Sprite>> future;
         IFuture<Reference<Texture2D>> future;
         Reference<Texture2D> textrueRef;
 
