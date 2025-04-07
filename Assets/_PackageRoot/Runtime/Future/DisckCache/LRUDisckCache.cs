@@ -44,11 +44,49 @@ namespace Extensions.Unity.ImageLoader
         LinkedList<KeyValuePair<string, string>> cache = new();
         Dictionary<string, LinkedListNode<KeyValuePair<string, string>>> nodeCache = new();
 
+        private int maxCacheSize { get; set; } = 100;
+        
         public bool Contains(string key)
         {
-            return nodeCache.ContainsKey(key);
+            if (nodeCache.TryGetValue(key, out var node))
+            {
+                if (File.Exists(node.Value.Value))
+                {
+                    cache.Remove(node);
+                    cache.AddFirst(node);
+                    return true;
+                }
+                
+                Remove(key);
+                return false;
+            }
+
+            var path = KeyToPath(key);
+            if (File.Exists(path))
+            {
+                cache.AddFirst(new KeyValuePair<string, string>(key, path));
+                nodeCache.Add(key, cache.First);
+                return true;
+            }
+            return false;
         }
 
+        void RemoveLast()
+        {
+            var last = cache.Last;
+            if (last != null)
+            {
+                if (File.Exists(last.Value.Value))
+                {
+                    File.Delete(last.Value.Value);
+                }
+                
+                nodeCache.Remove(last.Value.Key);
+                cache.RemoveLast();
+            }
+        }
+        
+        
         public string Add(string key, byte[] date)
         {
             Debug.Assert(!nodeCache.ContainsKey(key));
@@ -61,6 +99,11 @@ namespace Extensions.Unity.ImageLoader
 
             cache.AddFirst(new KeyValuePair<string, string>(key, path));
             nodeCache.Add(key, cache.First);
+
+            while (cache.Count > maxCacheSize)
+            {
+                RemoveLast();
+            }
 
             return path;
         }
