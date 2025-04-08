@@ -94,9 +94,7 @@ namespace Extensions.Unity.ImageLoader
             var refCount = Reference<T>.Counter(url);
             if (refCount > 0)
             {
-                Debug.LogError($"[ImageLoader] There are {refCount} references to the sprite, clear them first. URL={url}");
-                return;
-                // throw new Exception($"[ImageLoader] There are {refCount} references to the sprite, clear them first. URL={url}");               
+                throw new Exception($"[ImageLoader] There are {refCount} references to the sprite, clear them first. URL={url}");               
             }
 
 

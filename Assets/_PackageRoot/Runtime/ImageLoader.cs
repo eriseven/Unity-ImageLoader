@@ -9,10 +9,9 @@ namespace Extensions.Unity.ImageLoader
         /// <summary>
         /// Initialization of static variables, should be called from main thread at project start
         /// </summary>
-        public static void Init()
+        public static void Init(Settings settings = null)
         {
-            // need get SaveLocation variable in runtime from thread to setup the default static value into it
-            var temp = settings.diskSaveLocation + settings.diskSaveLocation;
+            _settings = settings;
         }
 
         /// <summary>
