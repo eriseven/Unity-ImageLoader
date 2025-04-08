@@ -138,8 +138,13 @@ namespace Extensions.Unity.ImageLoader
 
         public void RemoveAllType(string key, bool destroy = true, DebugLevel logLevel = DebugLevel.Log)
         {
-            foreach (var cache in typeMap.Values)
+            foreach (var kvp in typeMap)
             {
+                var refCount = ReferenceRegister.Counter(key, kvp.Key);
+                if (refCount > 0)
+                    throw new Exception($"[ImageLoader] There are {refCount} references to the sprite, clear them first. URL={key}");
+                    
+                var cache = kvp.Value;
                 if (cache.TryGetValue(key, out var obj))
                 {
                     cache.Remove(key);
@@ -180,10 +185,17 @@ namespace Extensions.Unity.ImageLoader
         public void Clear(bool destroy = true, DebugLevel logLevel = DebugLevel.Log)
         {
             if (destroy)
-                foreach (var cache in typeMap.Values)
+                foreach (var kvp in typeMap)
                 {
-                    foreach (var obj in cache.Values)
+                    var type = kvp.Key;
+                    var cache = kvp.Value;
+                    foreach (var _kvp in cache)
                     {
+                        var refCount = ReferenceRegister.Counter(_kvp.Key, kvp.Key);
+                        if (refCount > 0)
+                            Debug.LogError($"[ImageLoader] There are {refCount} references to the object, clear them first. URL={_kvp.Key}");
+                            
+                        var obj = _kvp.Value;
                         obj?.Release();
                     }
                 }

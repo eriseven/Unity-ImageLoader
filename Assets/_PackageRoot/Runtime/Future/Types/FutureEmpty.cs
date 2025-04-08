@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 
 namespace Extensions.Unity.ImageLoader
 {
-    public class FutureEmpty<T> : Future<T> where T : UnityEngine.Object
+    public class FutureEmpty<T> : Future<T> where T : class
     {
         public FutureEmpty(string url, CancellationToken cancellationToken = default) : base(url, cancellationToken)
         {

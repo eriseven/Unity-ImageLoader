@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Extensions.Unity.ImageLoader
 {
-    public partial class Reference<T> : UnityEngine.Object, IDisposable
+    public partial class Reference<T> : IDisposable
     {
         private volatile static Dictionary<string, int> referenceCounters = new Dictionary<string, int>();
         internal static void Clear()
