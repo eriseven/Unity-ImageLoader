@@ -13,11 +13,10 @@ namespace Extensions.Unity.ImageLoader
         [UnityEditor.InitializeOnEnterPlayMode]
         private static void ClearMemoryCacheOnEnterPlayMode()
         {
-            FutureSprite.ClearMemoryCacheAll(FutureSprite.ReleaseMemorySprite, settings.debugLevel);
-            FutureTexture.ClearMemoryCacheAll(FutureTexture.ReleaseMemoryTexture, settings.debugLevel);
+            ClearMemoryCacheAll();
         }
 #endif
-
+        
         /// <summary>
         /// Check the Memory cache contains sprite for the given url
         /// </summary>
@@ -75,8 +74,15 @@ namespace Extensions.Unity.ImageLoader
         /// <param name="url">URL to the picture, web or local</param>
         public static void ClearMemoryCache(string url)
         {
+#if LEGACY_MEMORY_CACHE
             FutureSprite.ClearMemoryCache(url, FutureSprite.ReleaseMemorySprite, settings.debugLevel);
             FutureTexture.ClearMemoryCache(url, FutureTexture.ReleaseMemoryTexture, settings.debugLevel);
+#else
+            lock (settings.memoryCache)
+            {
+                settings.memoryCache.RemoveAllType(url, true, settings.debugLevel);
+            }
+#endif
         }
 
         /// <summary>
@@ -85,8 +91,15 @@ namespace Extensions.Unity.ImageLoader
         /// <param name="url">URL to the picture, web or local</param>
         public static void ClearMemoryCacheAll()
         {
+#if LEGACY_MEMORY_CACHE
             FutureSprite.ClearMemoryCacheAll(FutureSprite.ReleaseMemorySprite, settings.debugLevel);
             FutureTexture.ClearMemoryCacheAll(FutureTexture.ReleaseMemoryTexture, settings.debugLevel);
+#else
+            lock (settings.memoryCache)
+            {
+                settings.memoryCache.Clear(true, settings.debugLevel);
+            }
+#endif
         }
     }
 }

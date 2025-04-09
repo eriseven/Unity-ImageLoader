@@ -1,8 +1,31 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Extensions.Unity.ImageLoader
 {
+    internal static class ReferenceRegister
+    {
+        static Dictionary<Type, Func<string, int>> counters = new Dictionary<Type, Func<string, int>>();
+        public static void Register(Type type, Func<string, int> counter, DebugLevel logLevel = DebugLevel.Log)
+        {
+            if (!counters.ContainsKey(type))
+            {
+                counters.Add(type, counter);
+            }
+        }
+
+        public static int Counter(string url, Type type, DebugLevel logLevel = DebugLevel.Log)
+        {
+            if (counters.TryGetValue(type, out var counter))
+            {
+                return counter(url);
+            }
+
+            return 0;
+        }
+    }
+    
     public partial class Reference<T> : IDisposable
     {
         private static volatile uint idCounter = 0;
@@ -32,6 +55,7 @@ namespace Extensions.Unity.ImageLoader
                 if (ImageLoader.settings.debugLevel.IsActive(DebugLevel.Trace))
                     Debug.Log($"[ImageLoader] Ref[id={Id}] Reference created. Total {referenceCounters[url]} references to the object\n{Url}");
             }
+            ReferenceRegister.Register(typeof(T), Counter);
         }
         private void OnClearUrl(string url)
         {

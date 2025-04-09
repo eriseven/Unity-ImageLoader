@@ -27,15 +27,14 @@ namespace Extensions.Unity.ImageLoader
         /// </summary>
         protected virtual void ClearMemoryCache()
         {
-            try
+#if LEGACY_MEMORY_CACHE
+            ClearMemoryCache(Url, ReleaseMemory, LogLevel);
+#else
+            lock (memoryCache)
             {
-                ClearMemoryCache(Url, ReleaseMemory, LogLevel);
+                memoryCache.RemoveAllType(Url, true, LogLevel);
             }
-            catch (Exception e)
-            {
-                if (LogLevel.IsActive(DebugLevel.Exception))
-                    Debug.LogException(e);
-            }
+#endif
         }
 
         /// <summary>

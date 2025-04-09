@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Networking;
+using Object = UnityEngine.Object;
 
 namespace Extensions.Unity.ImageLoader
 {
@@ -10,7 +11,7 @@ namespace Extensions.Unity.ImageLoader
     {
         public static volatile uint idCounter = 0;
     }
-    public partial class Future<T> : IFuture<T>, IFuture, IFutureInternal<T>, IDisposable
+    public partial class Future<T> : IFuture<T>, IFuture, IFutureInternal<T>, IDisposable where T : class
     {
         public string Url { get; }
 

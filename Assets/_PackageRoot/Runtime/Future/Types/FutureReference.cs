@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 
 namespace Extensions.Unity.ImageLoader
 {
-    public class FutureReference<T> : Future<Reference<T>>
+    public class FutureReference<T> : Future<Reference<T>>  //where T : UnityEngine.Object
     {
         public FutureReference(string url, CancellationToken cancellationToken = default, DebugLevel? logLevel = null) : base(url, cancellationToken, logLevel)
         {
