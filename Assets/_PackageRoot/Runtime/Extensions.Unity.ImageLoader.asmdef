@@ -3,7 +3,8 @@
     "rootNamespace": "Extensions.Unity.ImageLoader",
     "references": [
         "UniTask",
-        "Ktx"
+        "Ktx",
+        "Gilzoide.EasyProjectSettings"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

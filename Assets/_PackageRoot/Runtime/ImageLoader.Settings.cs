@@ -1,7 +1,6 @@
 using System;
-using UnityEditor;
 using UnityEngine;
-using Object = UnityEngine.Object;
+using Gilzoide.EasyProjectSettings;
 
 namespace Extensions.Unity.ImageLoader
 {
@@ -17,10 +16,11 @@ namespace Extensions.Unity.ImageLoader
             {
                 if (_settings == null)
                 {
-                    _settings = Object.FindObjectOfType<Settings>();
+                    _settings = ProjectSettings.Load<SettingsAsset>().settings;
+
                     if (_settings == null)
                     {
-                        _settings = ScriptableObject.CreateInstance<Settings>();
+                        _settings = new Settings();
                     }
                 }
 
@@ -30,9 +30,20 @@ namespace Extensions.Unity.ImageLoader
     }
 
 
-    [CreateAssetMenu(fileName = "ImageLoaderSettings", menuName = "ImageLoader/Create Settings")]
-    public partial class Settings : ScriptableObject
+    // [CreateAssetMenu(fileName = "ImageLoaderSettings", menuName = "ImageLoader/Create Settings")]
+    [Serializable]
+    public partial class Settings// : ScriptableObject
     {
+        private static string AppPersistentDataPath = "";
+        
+        #if UNITY_EDITOR
+        [UnityEditor.InitializeOnLoadMethod]
+        #endif
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void OnInit()
+        {
+            AppPersistentDataPath = Application.persistentDataPath;
+        }
         /// <summary>
         /// The level of debug messages that will be shown in the console.
         /// Default value is DebugLevel.Warning
@@ -61,7 +72,7 @@ namespace Extensions.Unity.ImageLoader
 
         public string diskSaveLocation
         {
-            get => string.IsNullOrEmpty(_diskSaveLocation) ? Application.persistentDataPath + "/ImageLoader" : _diskSaveLocation;
+            get => string.IsNullOrEmpty(_diskSaveLocation) ? AppPersistentDataPath + "/ImageLoader" : _diskSaveLocation;
             set { _diskSaveLocation = value; }
         } 
 
