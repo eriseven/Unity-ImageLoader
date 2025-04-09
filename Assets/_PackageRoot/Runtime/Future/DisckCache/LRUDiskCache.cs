@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 
 namespace Extensions.Unity.ImageLoader
 {
-    public class LRUDisckCache : IDiskCache
+    public class LRUDiskCache : IDiskCache
     {
         private string DiskCacheFolderPath => ImageLoader.settings.diskSaveLocation;
 
@@ -41,21 +42,30 @@ namespace Extensions.Unity.ImageLoader
             return Path.Combine(DiskCacheFolderPath, KeyHash(key));
         }
 
-        LinkedList<KeyValuePair<string, string>> cache = new();
-        Dictionary<string, LinkedListNode<KeyValuePair<string, string>>> nodeCache = new();
+        [Serializable]
+        public struct CacheEntry
+        {
+            public string Key;
+            public string Path;
+        }
+        
+        LinkedList<CacheEntry> cache = new();
+        Dictionary<string, LinkedListNode<CacheEntry>> nodeCache = new();
 
         private int maxCacheSize { get; set; } = 100;
 
-        public LRUDisckCache(int maxSize)
+        private DateTime lastStoreTime;
+        public LRUDiskCache(int maxSize)
         {
-            
+            lastStoreTime = DateTime.Now;
+            maxCacheSize = maxSize;
         }
         
         public bool Contains(string key)
         {
             if (nodeCache.TryGetValue(key, out var node))
             {
-                if (File.Exists(node.Value.Value))
+                if (File.Exists(node.Value.Path))
                 {
                     cache.Remove(node);
                     cache.AddFirst(node);
@@ -69,7 +79,7 @@ namespace Extensions.Unity.ImageLoader
             var path = KeyToPath(key);
             if (File.Exists(path))
             {
-                cache.AddFirst(new KeyValuePair<string, string>(key, path));
+                cache.AddFirst(new CacheEntry { Key = key, Path = path });
                 nodeCache.Add(key, cache.First);
                 return true;
             }
@@ -81,9 +91,9 @@ namespace Extensions.Unity.ImageLoader
             var last = cache.Last;
             if (last != null)
             {
-                if (File.Exists(last.Value.Value))
+                if (File.Exists(last.Value.Path))
                 {
-                    File.Delete(last.Value.Value);
+                    File.Delete(last.Value.Path);
                 }
                 
                 nodeCache.Remove(last.Value.Key);
@@ -94,7 +104,12 @@ namespace Extensions.Unity.ImageLoader
         
         public string Add(string key, byte[] date)
         {
-            Debug.Assert(!nodeCache.ContainsKey(key));
+            if (nodeCache.TryGetValue(key, out var node))
+            {
+                Debug.LogWarning($"[ImageLoader] Duplicate key: {key}");
+                return node.Value.Path;
+            }
+            
             var path = KeyToPath(key);
 
             if (!Directory.Exists(Path.GetDirectoryName(path)))
@@ -102,7 +117,7 @@ namespace Extensions.Unity.ImageLoader
 
             File.WriteAllBytes(path, date);
 
-            cache.AddFirst(new KeyValuePair<string, string>(key, path));
+            cache.AddFirst(new CacheEntry { Key = key, Path = path });
             nodeCache.Add(key, cache.First);
 
             while (cache.Count > maxCacheSize)
@@ -119,7 +134,7 @@ namespace Extensions.Unity.ImageLoader
             if (nodeCache.ContainsKey(key))
             {
                 var node = nodeCache[key];
-                path = node.Value.Value;
+                path = node.Value.Path;
 
                 cache.Remove(node);
                 nodeCache.Remove(key);
@@ -140,18 +155,17 @@ namespace Extensions.Unity.ImageLoader
             if (nodeCache.ContainsKey(key))
             {
                 var node = nodeCache[key];
-                var path = node.Value.Value;
+                var path = node.Value.Path;
                 if (File.Exists(path))
                 {
                     var bytes = File.ReadAllBytes(path);
                     cache.Remove(node);
                     cache.AddFirst(node);
+                    return bytes;
                 }
-                else
-                {
-                    nodeCache.Remove(key);
-                    cache.Remove(node);
-                }
+
+                nodeCache.Remove(key);
+                cache.Remove(node);
             }
 
             return null;
@@ -167,7 +181,11 @@ namespace Extensions.Unity.ImageLoader
 
         void StoreCache()
         {
-            
+            var ts = DateTime.Now - lastStoreTime;
+            if (ts.TotalMinutes >= 2)
+            {
+                var jsonString = JsonUtility.ToJson(cache.ToList());
+            }
         }
     }
 }

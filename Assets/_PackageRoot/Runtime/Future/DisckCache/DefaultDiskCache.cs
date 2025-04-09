@@ -94,5 +94,6 @@ namespace Extensions.Unity.ImageLoader
     public partial class Settings
     {
         public IDiskCache diskCache = new DefaultDiskCache();
+        // public IDiskCache diskCache = new LRUDiskCache(1000);
     }
 }
