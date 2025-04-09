@@ -1,12 +1,13 @@
 using System;
+using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Extensions.Unity.ImageLoader
 {
     public static partial class ImageLoader
     {
         static Settings _settings;
-
         /// <summary>
         /// The global settings for the ImageLoader
         /// </summary>
@@ -16,7 +17,11 @@ namespace Extensions.Unity.ImageLoader
             {
                 if (_settings == null)
                 {
-                    _settings = new Settings();
+                    _settings = Object.FindObjectOfType<Settings>();
+                    if (_settings == null)
+                    {
+                        _settings = ScriptableObject.CreateInstance<Settings>();
+                    }
                 }
 
                 return _settings;
@@ -24,6 +29,8 @@ namespace Extensions.Unity.ImageLoader
         }
     }
 
+
+    [CreateAssetMenu(fileName = "ImageLoaderSettings", menuName = "ImageLoader/Create Settings")]
     public partial class Settings : ScriptableObject
     {
         /// <summary>
@@ -41,7 +48,7 @@ namespace Extensions.Unity.ImageLoader
 
         public bool useMemoryCache = true;
 #if UNITY_WEBGL
-        public bool useDiskCache = false; // default value for WebGL = false
+        public bool useDiskCache => false; // default value for WebGL = false
 #else
         public bool useDiskCache = true; // default value for non WebGL = true
 #endif
@@ -49,7 +56,14 @@ namespace Extensions.Unity.ImageLoader
         /// The location where the images will be saved on disk.
         /// If not set, it will default to UnityEngine.Application.persistentDataPath + "/ImageLoader"
         /// </summary>
-        public string diskSaveLocation { get; set; } = UnityEngine.Application.persistentDataPath + "/ImageLoader";
+        [SerializeField]
+        private string _diskSaveLocation = "";
+
+        public string diskSaveLocation
+        {
+            get => string.IsNullOrEmpty(_diskSaveLocation) ? Application.persistentDataPath + "/ImageLoader" : _diskSaveLocation;
+            set { _diskSaveLocation = value; }
+        } 
 
         /// <summary>
         /// The timeout for the web requests

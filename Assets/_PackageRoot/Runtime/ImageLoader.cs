@@ -6,12 +6,17 @@ namespace Extensions.Unity.ImageLoader
 {
     public static partial class ImageLoader
     {
+        static bool initialized = false;
         /// <summary>
         /// Initialization of static variables, should be called from main thread at project start
         /// </summary>
         public static void Init(Settings settings = null)
         {
-            _settings = settings;
+            if (!initialized)
+            {
+                _settings = settings;
+                initialized = true;
+            }
         }
 
         /// <summary>
