@@ -45,6 +45,11 @@ namespace Extensions.Unity.ImageLoader
         Dictionary<string, LinkedListNode<KeyValuePair<string, string>>> nodeCache = new();
 
         private int maxCacheSize { get; set; } = 100;
+
+        public LRUDisckCache(int maxSize)
+        {
+            
+        }
         
         public bool Contains(string key)
         {
@@ -158,6 +163,11 @@ namespace Extensions.Unity.ImageLoader
             {
                 Directory.Delete(DiskCacheFolderPath, true);
             }
+        }
+
+        void StoreCache()
+        {
+            
         }
     }
 }
