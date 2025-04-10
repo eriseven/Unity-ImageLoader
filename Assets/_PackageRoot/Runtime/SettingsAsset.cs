@@ -3,7 +3,7 @@ using Gilzoide.EasyProjectSettings;
 
 namespace Extensions.Unity.ImageLoader
 {
-    [ProjectSettings("Assets/ImageLoader/Settings", SettingsPath = "Project/ImageLoader/Settings")]
+    [ProjectSettings("Assets/ImageLoader/Resources/Settings", SettingsPath = "Project/ImageLoader/Settings")]
     public class SettingsAsset : ScriptableObject
     {
         [SerializeField]
