@@ -47,9 +47,18 @@ namespace Extensions.Unity.ImageLoader
         {
         }
 
-        public bool Contains(string key)
+        public bool Contains(string key, out string path)
         {
-            return File.Exists(KeyToPath(key));
+            path = KeyToPath(key);
+            if (File.Exists(path))
+            {
+                return true;
+            }
+            else
+            {
+                path = null;
+                return false;
+            }
         }
 
         public string Add(string key, byte[] date)

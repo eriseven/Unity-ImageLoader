@@ -55,19 +55,25 @@ namespace Extensions.Unity.ImageLoader.UGUI
         void OnLoaded(Reference<Texture2D> reference)
         {
             Debug.Log("RemoteRawImage.Reload() Loaded");
-            // remoteTexture = reference.Value;
+            remoteTexture = reference.Value;
             textrueRef = reference;
         }
 
         void OnFailed(Exception exception)
         {
             Debug.Log("RemoteRawImage.Reload() failed");
+            remoteTexture = null;
             future?.Dispose();
             future = null;
         }
 
         void Reload()
         {
+            if (!isActiveAndEnabled)
+            {
+                return;
+            }
+            Debug.Log("RemoteRawImage.Reload()");
             if (dirty || remoteTexture == null)
             {
                 if (future != null && future.Url == m_url)
@@ -77,10 +83,11 @@ namespace Extensions.Unity.ImageLoader.UGUI
 
                 if (!string.IsNullOrEmpty(url))
                 {
-                    remoteTexture = null;
+                    remoteTexture = m_PlaceHolder;
                     textrueRef?.Dispose();
                     textrueRef = null;
 
+                    future?.Cancel();
                     future?.Dispose();
                     future = null;
                     dirty = false;
@@ -111,8 +118,11 @@ namespace Extensions.Unity.ImageLoader.UGUI
         {
             Debug.Log("RemoteRawImage.OnDestroy()");
             base.OnDisable();
+            remoteTexture = null;
+            future?.Cancel();
             future?.Dispose();
             textrueRef?.Dispose();
+            textrueRef = null;
         }
 
         // protected override void OnDisable()

@@ -9,6 +9,7 @@ namespace Extensions.Unity.ImageLoader.Tests
         public virtual IEnumerator SetUp()
         {
             yield return TestUtils.ClearEverything("<b>Test Start </b>");
+            ImageLoader.Init(new Settings());
             ImageLoader.settings.debugLevel = DebugLevel.Trace;
         }
         public virtual IEnumerator TearDown()

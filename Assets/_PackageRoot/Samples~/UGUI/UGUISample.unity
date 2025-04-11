@@ -440,7 +440,7 @@ MonoBehaviour:
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
   m_url: https://github.com/IvanMurzak/Unity-ImageLoader/raw/main/Test%20Images/ImageC.png
-  m_PlaceHolder: {fileID: 2800000, guid: 000a868f6abddbc4182428ca3c1d3836, type: 3}
+  m_PlaceHolder: {fileID: 2800000, guid: 97190da8bf5d49345b5186b1c220aa1a, type: 3}
 --- !u!222 &801742657
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -604,7 +604,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 1895986795}
+  m_Texture: {fileID: 1861816279}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -612,7 +612,7 @@ MonoBehaviour:
     width: 1
     height: 1
   m_url: https://github.com/IvanMurzak/Unity-ImageLoader/raw/main/Test%20Images/ImageA.jpg
-  m_PlaceHolder: {fileID: 0}
+  m_PlaceHolder: {fileID: 2800000, guid: 000a868f6abddbc4182428ca3c1d3836, type: 3}
 --- !u!222 &1759902063
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -621,7 +621,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1759902060}
   m_CullTransparentMesh: 1
---- !u!28 &1895986795
+--- !u!28 &1861816279
 Texture2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -781,6 +781,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: RawImage
+      objectReference: {fileID: 0}
+    - target: {fileID: 9033276903827960866, guid: d784a50fd5a7e844090fc99aa4d39460,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -967,6 +972,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Image
+      objectReference: {fileID: 0}
+    - target: {fileID: 734325667026377947, guid: fb9d7801181148448acd6a2880cb146f,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2134925861689035320, guid: fb9d7801181148448acd6a2880cb146f,
         type: 3}

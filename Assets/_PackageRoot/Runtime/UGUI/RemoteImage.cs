@@ -72,6 +72,10 @@ namespace Extensions.Unity.ImageLoader.UGUI
 
         void Reload()
         {
+            if (!isActiveAndEnabled)
+            {
+                return;
+            }
             if (dirty || overrideSprite == null)
             {
                 if (overrideSprite == null && textrueRef is { IsDisposed: false })
@@ -119,6 +123,8 @@ namespace Extensions.Unity.ImageLoader.UGUI
         {
             Debug.Log("RemoteImage.OnDestroy()");
             base.OnDestroy();
+            overrideSprite = null;
+            future?.Cancel();
             future?.Dispose();
             textrueRef?.Dispose();
         }

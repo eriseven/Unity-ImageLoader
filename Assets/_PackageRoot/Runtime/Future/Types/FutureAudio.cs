@@ -66,7 +66,8 @@ namespace Extensions.Unity.ImageLoader
 
         protected override async Task<AudioClip> LoadFromDiskAsync()
         {
-            var url = "file:///" + (DiskCachePath(Url));
+            diskCache.Contains(Url, out var path);
+            var url = "file:///" + (path);
             var request = UnityWebRequestMultimedia.GetAudioClip(url, AudioType.UNKNOWN);
             await request.SendWebRequest();
 #if UNITY_2020_1_OR_NEWER

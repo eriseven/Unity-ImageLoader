@@ -61,14 +61,16 @@ namespace Extensions.Unity.ImageLoader
             maxCacheSize = maxSize;
         }
         
-        public bool Contains(string key)
+        public bool Contains(string key, out string path)
         {
+            path = null;
             if (nodeCache.TryGetValue(key, out var node))
             {
                 if (File.Exists(node.Value.Path))
                 {
                     cache.Remove(node);
                     cache.AddFirst(node);
+                    path = node.Value.Path;
                     return true;
                 }
                 
@@ -76,13 +78,14 @@ namespace Extensions.Unity.ImageLoader
                 return false;
             }
 
-            var path = KeyToPath(key);
+            path = KeyToPath(key);
             if (File.Exists(path))
             {
                 cache.AddFirst(new CacheEntry { Key = key, Path = path });
                 nodeCache.Add(key, cache.First);
                 return true;
             }
+            path = null;
             return false;
         }
 
